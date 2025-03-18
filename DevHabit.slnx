@@ -1,0 +1,9 @@
+﻿<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="compose.yaml" />
+    <File Path="compose.override.yaml" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="DevHabit.Api\DevHabit.Api.csproj" Type="Classic C#" />
+  </Folder>
+</Solution>
