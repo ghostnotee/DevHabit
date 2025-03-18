@@ -1,0 +1,12 @@
+﻿services:
+  devhabit.api:
+    environment:
+      - ASNETCORE_ENVIRONMENT=Development
+      - ASNETCORE_HTTP_PORTS=8080
+      - ASNETCORE_HTTPs_PORTS=8081
+    ports:
+      - "8080"
+      - "8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

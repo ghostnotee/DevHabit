@@ -1,0 +1,19 @@
+﻿services:
+  devhabit.api:
+    image: devhabit.api
+    build:
+      context: .
+      dockerfile: DevHabit.Api/Dockerfile
+    ports:
+      - "5000:8080"
+      - "5001:8081"
+  
+  devhabit.seq:
+    image: datalust/seq:2024.3 # or latest
+    environment:
+      ACCEPT_EULA: "Y"
+    volumes:
+      - ./.containers/seq_data:/data
+    ports:
+      - "8080:80"
+      - "5341:5341"
