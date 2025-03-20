@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - develop
 
 env:
   DOTNET_VERSION: "9.x"
@@ -12,10 +12,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: DevHabit
 
     steps:
       - uses: actions/checkout@v4
