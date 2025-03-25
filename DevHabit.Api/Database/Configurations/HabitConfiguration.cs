@@ -2,7 +2,7 @@ using DevHabit.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace DevHabit.Api.Database;
+namespace DevHabit.Api.Database.Configurations;
 
 public class HabitConfiguration : IEntityTypeConfiguration<Habit>
 {
