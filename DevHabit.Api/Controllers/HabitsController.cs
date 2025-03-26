@@ -2,7 +2,6 @@ using DevHabit.Api.Database;
 using DevHabit.Api.DTOs.Habits;
 using DevHabit.Api.Entities;
 using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -35,8 +34,7 @@ public sealed class HabitsController(ApplicationDbContext dbContext) : Controlle
     [HttpPost]
     public async Task<ActionResult<HabitDto>> CreateHabit(CreateHabitDto createHabitDto, IValidator<CreateHabitDto> validator)
     {
-        ValidationResult? validationResult = await validator.ValidateAsync(createHabitDto);
-        if(!validationResult.IsValid) return BadRequest(validationResult.ToDictionary());
+        await validator.ValidateAndThrowAsync(createHabitDto);
         Habit habit = createHabitDto.ToEntity();
         dbContext.Habits.Add(habit);
         await dbContext.SaveChangesAsync();
@@ -68,14 +66,14 @@ public sealed class HabitsController(ApplicationDbContext dbContext) : Controlle
         await dbContext.SaveChangesAsync();
         return NoContent();
     }
-    
+
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteHabit(string id)
     {
         Habit? habit = await dbContext.Habits.FirstOrDefaultAsync(h => h.Id == id);
         if (habit is null) return NotFound();
         dbContext.Habits.Remove(habit);
-        await dbContext.SaveChangesAsync(); 
+        await dbContext.SaveChangesAsync();
         return NoContent();
     }
 }
