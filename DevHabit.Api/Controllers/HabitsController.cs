@@ -13,9 +13,16 @@ namespace DevHabit.Api.Controllers;
 public sealed class HabitsController(ApplicationDbContext dbContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<HabitsCollectionDto>> GetHabits()
+    public async Task<ActionResult<HabitsCollectionDto>> GetHabits([FromQuery] HabitsQueryParameters query)
     {
-        List<HabitDto> habits = await dbContext.Habits.Select(HabitQueries.ProjectToDto()).ToListAsync();
+        query.Search ??= query.Search?.Trim().ToLower();
+        List<HabitDto> habits = await dbContext.Habits
+            .Where(h => query.Search == null ||
+                        h.Name.Contains(query.Search) ||
+                        h.Description != null && h.Description.Contains(query.Search))
+            .Where(h => query.Type == null || h.Type == query.Type)
+            .Where(h => query.Status == null || h.Status == query.Status)
+            .Select(HabitQueries.ProjectToDto()).ToListAsync();
         var habitsCollectionDto = new HabitsCollectionDto { Data = habits };
         return Ok(habitsCollectionDto);
     }
