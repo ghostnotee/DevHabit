@@ -1,4 +1,5 @@
 using DevHabit.Api.Database;
+using DevHabit.Api.DTOs.Common;
 using DevHabit.Api.DTOs.Habits;
 using DevHabit.Api.Entities;
 using DevHabit.Api.Services.Sorting;
@@ -14,7 +15,9 @@ namespace DevHabit.Api.Controllers;
 public sealed class HabitsController(ApplicationDbContext dbContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<HabitsCollectionDto>> GetHabits([FromQuery] HabitsQueryParameters query, SortMappingProvider sortMappingProvider)
+    public async Task<ActionResult<PaginationResult<HabitDto>>> GetHabits(
+        [FromQuery] HabitsQueryParameters query,
+        SortMappingProvider sortMappingProvider)
     {
         if (!sortMappingProvider.ValidateMappings<HabitDto, Habit>(query.Sort))
             return Problem(
@@ -23,14 +26,18 @@ public sealed class HabitsController(ApplicationDbContext dbContext) : Controlle
         query.Search ??= query.Search?.Trim().ToLower();
         SortMapping[] sortMappings = sortMappingProvider.GetMappings<HabitDto, Habit>();
 
-        List<HabitDto> habits = await dbContext.Habits
-            .Where(h => query.Search == null || h.Name.Contains(query.Search) || h.Description != null && h.Description.Contains(query.Search))
+        IQueryable<HabitDto> habitsQuery = dbContext.Habits
+            .Where(h => query.Search == null ||
+                        h.Name.Contains(query.Search) ||
+                        h.Description != null && h.Description.Contains(query.Search))
             .Where(h => query.Type == null || h.Type == query.Type)
             .Where(h => query.Status == null || h.Status == query.Status)
             .ApplySort(query.Sort, sortMappings)
-            .Select(HabitQueries.ProjectToDto()).ToListAsync();
-        var habitsCollectionDto = new HabitsCollectionDto { Data = habits };
-        return Ok(habitsCollectionDto);
+            .Select(HabitQueries.ProjectToDto());
+
+        var paginationResult = await PaginationResult<HabitDto>.CreateAsync(habitsQuery, query.Page, query.PageSize);
+
+        return Ok(paginationResult);
     }
 
     [HttpGet("{id}")]
