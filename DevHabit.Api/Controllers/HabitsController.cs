@@ -14,7 +14,7 @@ namespace DevHabit.Api.Controllers;
 
 [ApiController]
 [Route("habits")]
-public sealed class HabitsController(ApplicationDbContext dbContext) : ControllerBase
+public sealed class HabitsController(ApplicationDbContext dbContext, LinkService linkService) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetHabits([FromQuery] HabitsQueryParameters query, SortMappingProvider sortMappingProvider,
@@ -69,6 +69,15 @@ public sealed class HabitsController(ApplicationDbContext dbContext) : Controlle
             .FirstOrDefaultAsync();
         if (habit is null) return NotFound();
         ExpandoObject shapedHabitDto = dataShapingService.ShapeData(habit, fields);
+        LinkDto[] links =
+        [
+            linkService.Create(nameof(GetHabit), "self", HttpMethods.Get, new { id, fields }),
+            linkService.Create(nameof(UpdateHabit), "update", HttpMethods.Put, new { id }),
+            linkService.Create(nameof(PatchHabit), "partial-update", HttpMethods.Patch, new { id }),
+            linkService.Create(nameof(DeleteHabit), "delete", HttpMethods.Delete, new { id })
+        ];
+        shapedHabitDto.TryAdd("links", links);
+
         return Ok(shapedHabitDto);
     }
 
