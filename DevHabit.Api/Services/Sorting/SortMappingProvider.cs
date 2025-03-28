@@ -1,6 +1,5 @@
 namespace DevHabit.Api.Services.Sorting;
 
-#pragma warning disable
 public sealed class SortMappingProvider(IEnumerable<ISortMappingDefinition> sortMappingDefinitions)
 {
     public SortMapping[] GetMappings<TSource, TDestination>()
