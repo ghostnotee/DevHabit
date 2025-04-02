@@ -1,13 +1,14 @@
 using System.Collections.Concurrent;
 using System.Dynamic;
 using System.Reflection;
+using DevHabit.Api.DTOs.Common;
 
 namespace DevHabit.Api.Services;
 
 public sealed class DataShapingService
 {
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]> PropertiesCache = new();
-    
+
     public ExpandoObject ShapeData<T>(T entity, string? fields)
     {
         HashSet<string> fieldsSet = fields?
@@ -27,8 +28,8 @@ public sealed class DataShapingService
 
         return (ExpandoObject)shapedObject;
     }
-    
-    public List<ExpandoObject> ShapeCollectionData<T>(IEnumerable<T> entities, string? fields)
+
+    public List<ExpandoObject> ShapeCollectionData<T>(IEnumerable<T> entities, string? fields, Func<T, List<LinkDto>>? linkFactory = null)
     {
         HashSet<string> fieldsSet = fields?
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -47,6 +48,7 @@ public sealed class DataShapingService
         {
             IDictionary<string, object?> shapedObject = new ExpandoObject();
             foreach (PropertyInfo propertyInfo in propertyInfos) shapedObject[propertyInfo.Name] = propertyInfo.GetValue(entity);
+            if (linkFactory is not null) shapedObject["links"] = linkFactory(entity);
             shapedObjects.Add((ExpandoObject)shapedObject);
         }
 
@@ -56,7 +58,7 @@ public sealed class DataShapingService
     public bool Validate<T>(string? fields)
     {
         if (string.IsNullOrWhiteSpace(fields)) return true;
-        
+
         var fieldsSet = fields
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(f => f.Trim())
