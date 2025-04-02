@@ -6,6 +6,7 @@ using DevHabit.Api.Middleware;
 using DevHabit.Api.Services;
 using DevHabit.Api.Services.Sorting;
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
@@ -49,7 +50,7 @@ public static class DependencyInjection
                 options.AssumeDefaultVersionWhenUnspecified = true;
                 options.ReportApiVersions = true;
                 options.ApiVersionSelector = new DefaultApiVersionSelector(options);
-                
+
                 options.ApiVersionReader = ApiVersionReader.Combine(
                     new MediaTypeApiVersionReader(),
                     new MediaTypeApiVersionReaderBuilder().Template("application/vnd.dev-habit.hateoas.{version}+json").Build()
@@ -83,6 +84,11 @@ public static class DependencyInjection
             optionsBuilder.UseNpgsql(
                     builder.Configuration.GetConnectionString("Database"),
                     contextOptionsBuilder => contextOptionsBuilder.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Application))
+                .UseSnakeCaseNamingConvention());
+        builder.Services.AddDbContext<ApplicationIdentityDbContext>(optionsBuilder =>
+            optionsBuilder.UseNpgsql(
+                    builder.Configuration.GetConnectionString("Database"),
+                    contextOptionsBuilder => contextOptionsBuilder.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Identity))
                 .UseSnakeCaseNamingConvention());
         return builder;
     }
@@ -118,6 +124,14 @@ public static class DependencyInjection
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddTransient<LinkService>();
 
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddAuthenticationServices(this WebApplicationBuilder builder)
+    {
+        builder.Services
+            .AddIdentity<IdentityUser, IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationIdentityDbContext>();
         return builder;
     }
 }
