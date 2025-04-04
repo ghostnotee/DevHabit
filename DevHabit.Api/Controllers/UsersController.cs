@@ -1,5 +1,6 @@
 using DevHabit.Api.Database;
 using DevHabit.Api.DTOs.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace DevHabit.Api.Controllers;
 
 [ApiController]
 [Route("users")]
+[Authorize]
 public sealed class UsersController(ApplicationDbContext dbContext) : ControllerBase
 {
     [HttpGet("{id}")]
@@ -17,10 +19,7 @@ public sealed class UsersController(ApplicationDbContext dbContext) : Controller
             .Select(UserQueries.ProjectToDto())
             .FirstOrDefaultAsync();
 
-        if (user is null)
-        {
-            return NotFound();
-        }
+        if (user is null) return NotFound();
 
         return Ok(user);
     }
