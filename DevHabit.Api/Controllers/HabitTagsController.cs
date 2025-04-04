@@ -9,7 +9,7 @@ namespace DevHabit.Api.Controllers;
 
 [ApiController]
 [Route("habits/{habitId}/tags")]
-[Authorize]
+[Authorize(Roles = Roles.Member)]
 public sealed class HabitTagsController(ApplicationDbContext dbContext) : ControllerBase
 {
     public static readonly string Name = nameof(HabitTagsController).Replace("Controller", string.Empty);

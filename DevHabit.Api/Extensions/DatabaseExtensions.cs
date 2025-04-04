@@ -1,4 +1,5 @@
 using DevHabit.Api.Database;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace DevHabit.Api.Extensions;
@@ -20,6 +21,23 @@ public static class DatabaseExtensions
         catch (Exception e)
         {
             app.Logger.LogError(e, "An error occurred while migrating the database.");
+            throw;
+        }
+    }
+
+    public static async Task SeedInitialDataAsync(this WebApplication app)
+    {
+        using IServiceScope scope = app.Services.CreateScope();
+        RoleManager<IdentityRole> roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        try
+        {
+            if (!await roleManager.RoleExistsAsync("Admin")) await roleManager.CreateAsync(new IdentityRole("Admin"));
+            if (!await roleManager.RoleExistsAsync("Member")) await roleManager.CreateAsync(new IdentityRole("Member"));
+            app.Logger.LogInformation("Successfully created roles.");
+        }
+        catch (Exception e)
+        {
+            app.Logger.LogError(e, "An error occurred while seeding initial data.");
             throw;
         }
     }
