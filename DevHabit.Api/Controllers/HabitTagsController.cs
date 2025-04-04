@@ -33,7 +33,7 @@ public sealed class HabitTagsController(ApplicationDbContext dbContext) : Contro
         string[] tagIdsToAdd = upsertHabitTagsDto.TagIds.Except(currentTagIds).ToArray();
         habit.HabitTags.AddRange(tagIdsToAdd.Select(tagId => new HabitTag { HabitId = habitId, TagId = tagId, CreatedAtUtc = DateTime.UtcNow }));
         await dbContext.SaveChangesAsync();
-        return Ok();
+        return NoContent();
     }
 
     [HttpDelete("{tagId}")]
