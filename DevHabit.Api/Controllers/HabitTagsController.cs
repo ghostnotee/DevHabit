@@ -1,6 +1,7 @@
 using DevHabit.Api.Database;
 using DevHabit.Api.DTOs.HabitTags;
 using DevHabit.Api.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,7 @@ namespace DevHabit.Api.Controllers;
 
 [ApiController]
 [Route("habits/{habitId}/tags")]
+[Authorize(Roles = Roles.Member)]
 public sealed class HabitTagsController(ApplicationDbContext dbContext) : ControllerBase
 {
     public static readonly string Name = nameof(HabitTagsController).Replace("Controller", string.Empty);
@@ -31,7 +33,7 @@ public sealed class HabitTagsController(ApplicationDbContext dbContext) : Contro
         string[] tagIdsToAdd = upsertHabitTagsDto.TagIds.Except(currentTagIds).ToArray();
         habit.HabitTags.AddRange(tagIdsToAdd.Select(tagId => new HabitTag { HabitId = habitId, TagId = tagId, CreatedAtUtc = DateTime.UtcNow }));
         await dbContext.SaveChangesAsync();
-        return Ok();
+        return NoContent();
     }
 
     [HttpDelete("{tagId}")]

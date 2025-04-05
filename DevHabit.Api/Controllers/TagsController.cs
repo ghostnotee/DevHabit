@@ -6,6 +6,7 @@ using DevHabit.Api.Entities;
 using DevHabit.Api.Services;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -14,18 +15,23 @@ namespace DevHabit.Api.Controllers;
 
 [ApiController]
 [Route("tags")]
+[Authorize(Roles = Roles.Member)]
 [Produces(
     MediaTypeNames.Application.Json,
     CustomMediaTypeNames.Application.JsonV1,
     CustomMediaTypeNames.Application.HateoasJson,
     CustomMediaTypeNames.Application.HateoasJsonV1)]
-public sealed class TagsController(ApplicationDbContext dbContext, LinkService linkService) : ControllerBase
+public sealed class TagsController(ApplicationDbContext dbContext, LinkService linkService, UserContext userContext) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<TagsCollectionDto>> GetTags([FromHeader] AcceptHeaderDto acceptHeader)
     {
+        string? userId = await userContext.GetUserIdAsync();
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
         List<TagDto> tags = await dbContext
             .Tags
+            .Where(t => t.UserId == userId)
             .Select(TagQueries.ProjectToDto())
             .ToListAsync();
 
@@ -34,10 +40,7 @@ public sealed class TagsController(ApplicationDbContext dbContext, LinkService l
             Items = tags
         };
 
-        if (acceptHeader.IncludeLinks)
-        {
-            habitsCollectionDto.Links = CreateLinksForTags();
-        }
+        if (acceptHeader.IncludeLinks) habitsCollectionDto.Links = CreateLinksForTags();
 
         return Ok(habitsCollectionDto);
     }
@@ -45,21 +48,18 @@ public sealed class TagsController(ApplicationDbContext dbContext, LinkService l
     [HttpGet("{id}")]
     public async Task<ActionResult<TagDto>> GetTag(string id, [FromHeader] AcceptHeaderDto acceptHeader)
     {
+        string? userId = await userContext.GetUserIdAsync();
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
         TagDto? tag = await dbContext
             .Tags
-            .Where(h => h.Id == id)
+            .Where(h => h.Id == id && h.UserId == userId)
             .Select(TagQueries.ProjectToDto())
             .FirstOrDefaultAsync();
 
-        if (tag is null)
-        {
-            return NotFound();
-        }
+        if (tag is null) return NotFound();
 
-        if (acceptHeader.IncludeLinks)
-        {
-            tag.Links = CreateLinksForTag(id);
-        }
+        if (acceptHeader.IncludeLinks) tag.Links = CreateLinksForTag(id);
 
         return Ok(tag);
     }
@@ -71,6 +71,9 @@ public sealed class TagsController(ApplicationDbContext dbContext, LinkService l
         IValidator<CreateTagDto> validator,
         ProblemDetailsFactory problemDetailsFactory)
     {
+        string? userId = await userContext.GetUserIdAsync();
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
         ValidationResult validationResult = await validator.ValidateAsync(createTagDto);
 
         if (!validationResult.IsValid)
@@ -79,18 +82,15 @@ public sealed class TagsController(ApplicationDbContext dbContext, LinkService l
                 HttpContext,
                 StatusCodes.Status400BadRequest);
             problem.Extensions.Add("errors", validationResult.ToDictionary());
-
             return BadRequest(problem);
         }
 
-        Tag tag = createTagDto.ToEntity();
+        Tag tag = createTagDto.ToEntity(userId);
 
         if (await dbContext.Tags.AnyAsync(t => t.Name == tag.Name))
-        {
             return Problem(
-                detail: $"The tag '{tag.Name}' already exists",
+                $"The tag '{tag.Name}' already exists",
                 statusCode: StatusCodes.Status409Conflict);
-        }
 
         dbContext.Tags.Add(tag);
 
@@ -98,10 +98,7 @@ public sealed class TagsController(ApplicationDbContext dbContext, LinkService l
 
         TagDto tagDto = tag.ToDto();
 
-        if (acceptHeader.IncludeLinks)
-        {
-            tagDto.Links = CreateLinksForTag(tag.Id);
-        }
+        if (acceptHeader.IncludeLinks) tagDto.Links = CreateLinksForTag(tag.Id);
 
         return CreatedAtAction(nameof(GetTag), new { id = tagDto.Id }, tagDto);
     }
@@ -109,15 +106,13 @@ public sealed class TagsController(ApplicationDbContext dbContext, LinkService l
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateTag(string id, UpdateTagDto updateTagDto)
     {
-        Tag? tag = await dbContext.Tags.FirstOrDefaultAsync(h => h.Id == id);
+        string? userId = await userContext.GetUserIdAsync();
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
 
-        if (tag is null)
-        {
-            return NotFound();
-        }
+        Tag? tag = await dbContext.Tags.FirstOrDefaultAsync(h => h.Id == id && h.UserId == userId);
+        if (tag is null) return NotFound();
 
         tag.UpdateFromDto(updateTagDto);
-
         await dbContext.SaveChangesAsync();
 
         return NoContent();
@@ -126,15 +121,13 @@ public sealed class TagsController(ApplicationDbContext dbContext, LinkService l
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteTag(string id)
     {
-        Tag? tag = await dbContext.Tags.FirstOrDefaultAsync(h => h.Id == id);
+        string? userId = await userContext.GetUserIdAsync();
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
 
-        if (tag is null)
-        {
-            return NotFound();
-        }
+        Tag? tag = await dbContext.Tags.FirstOrDefaultAsync(h => h.Id == id && h.UserId == userId);
+        if (tag is null) return NotFound();
 
         dbContext.Tags.Remove(tag);
-
         await dbContext.SaveChangesAsync();
 
         return NoContent();
