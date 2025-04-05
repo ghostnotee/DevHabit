@@ -1,0 +1,1222 @@
+{
+	"info": {
+		"_postman_id": "f75b546a-9404-48e5-8a9f-6c120cec94aa",
+		"name": "DevHabit",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8497065"
+	},
+	"item": [
+		{
+			"name": "Habits",
+			"item": [
+				{
+					"name": "Get habits",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas.1+json",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Accept",
+								"value": "application/json;v=1",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "https://localhost:5001/habits?fields=id,name,createdAtUtc",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"habits"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "reflection",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "name,frequency.type desc",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "pageSize",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "fields",
+									"value": "id,name,createdAtUtc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get habit by ID",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:5001/habits/:id",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"habits",
+								":id"
+							],
+							"query": [
+								{
+									"key": "fields",
+									"value": "name,createdAtUtc,updatedAtUtc,lastCompletedAtUtc",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "h_01960210-b119-709a-84db-05387695a7eb"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create habit",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas.1+json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Daily Coding\",\r\n    \"description\": null,\r\n    \"type\": 2,\r\n    \"frequency\": {\r\n        \"type\": 2,\r\n        \"timesPerPeriod\": 1\r\n    },\r\n    \"target\": {\r\n        \"value\": 30,\r\n        \"unit\": \"minutes\"\r\n    },\r\n    \"automationSource\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/habits",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"habits"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update habit",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Daily Coding\",\r\n    \"description\": \"The new description of the habit\",\r\n    \"type\": 2,\r\n    \"frequency\": {\r\n        \"type\": 1,\r\n        \"timesPerPeriod\": 1\r\n    },\r\n    \"target\": {\r\n        \"value\": 45,\r\n        \"unit\": \"minutes\"\r\n    },\r\n    \"milestone\": {\r\n        \"target\": 100\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/habits/:id",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"habits",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "h_0194cc23-4a5a-7036-91ab-d1b244430481"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Partially update habit",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json-patch+json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n  {\r\n    \"op\": \"replace\",\r\n    \"path\": \"/name\",\r\n    \"value\": \"Daily Coding\"\r\n  }\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/habits/:id",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"habits",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "h_0194cc23-4a5a-7036-91ab-d1b24443048c"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete habit",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:5001/habits/:id",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"habits",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "h_0194ccb0-c9d8-7527-aa8c-777e227e38c9"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"<YOUR_EMAIL>\",\r\n  \"name\": \"<YOUR_NAME>\",\r\n  \"password\": \"<YOUR_PASSWORD>\",\r\n  \"confirmPassword\": \"<YOUR_PASSWORD>\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/auth/register",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"selcukbilgen@hotmail.com\",\r\n  \"password\": \"123Qw!\"\r\n\r\n//   \"email\": \"selbilgen@gmail.com\",\r\n//   \"password\": \"123Qw!\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/auth/login",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"refreshToken\": \"<YOUR_REFRESH_TOKEN>\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/auth/refresh",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "GitHub",
+			"item": [
+				{
+					"name": "Store GitHub PAT",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"accessToken\": \"<YOUR_PERSONAL_TOKEN>\",\r\n  \"expiresInDays\": 30\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/github/personal-access-token",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"github",
+								"personal-access-token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get GitHub profile",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas+json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"pat\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/github/profile",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"github",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Revoke access token",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:5001/github/personal-access-token",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"github",
+								"personal-access-token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:5001/health",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get GitHub events",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"pat\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/github/profile/events",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"github",
+								"profile",
+								"events"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tags",
+			"item": [
+				{
+					"name": "Get tags",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:5001/tags",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"tags"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get tag by iD",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas.1+json",
+								"type": "text"
+							},
+							{
+								"key": "If-None-Match",
+								"value": "\"E05002FD35392907BEDFB3E48ABDB3B23AB338831F925D070AF6AADB84FC18D02BE3E3D4218366F18B595C0C978A4DA9468286605B4A4F9548CC1DA8AB057D26\"",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "https://localhost:5001/tags/:id",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"tags",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "t_0194ebd4-4442-7dc8-8580-00241e8ac24b"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create tag",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas.1+json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \".net\",\r\n    \"description\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/tags",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"tags"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update tag",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "If-Match",
+								"value": "\"07F02DD4545A2099BC9C4DCA31B27F4A3F373847251718CF2B547C1B01C355B41E012B34A6590A29116AAE6629912FABE32832A1D36ABDCA08D376D1171359DD\"",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \".net\",\r\n    \"description\": \"Detailed tag description123456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/tags/:id",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"tags",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "t_0194ebd4-4442-7dc8-8580-00241e8ac24b"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update tag - Concurrent",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "If-Match",
+								"value": "\"15DA8B1B9F298AFA64D052058B37078AE4B6FBB18DF3AE1DE683CDA18A6AD88D90D2D7829386E9674AD6AC0E0159444ACC530B3063138CCA4AECC70568643E3D\"",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \".net\",\r\n    \"description\": \"Detailed tag description\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/tags/:id",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"tags",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "t_0194ebd4-4442-7dc8-8580-00241e8ac24b"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete tag",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:5001/tags/:id",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"tags",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "t_0194d21d-e13a-727c-97ad-1c82f1c4a891"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get current user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:5001/users/me",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get user by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:5001/users/:id",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "u_0194eb07-d518-7da6-88ff-13e3109c984f"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update current user",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userName\": \"<YOUR_USERNAME>\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/users/me/profile",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"users",
+								"me",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Entries",
+			"item": [
+				{
+					"name": "Create entry",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas+json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"habitId\": \"h_0194f454-31d4-780d-ac00-08535499b0a0\",\r\n  \"value\": 1,\r\n  \"date\": \"2025-02-13\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/entries",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"entries"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Import entries",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas+json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "File",
+									"type": "file",
+									"src": "/C:/Users/milan/source/courses/REST/dev-habit/.files/habit-data.csv"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://localhost:5001/entries/imports",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"entries",
+								"imports"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get entries",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:5001/entries",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"entries"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get entry import by ID",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:5001/entries/imports/:id",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"entries",
+								"imports",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "ei_0194ffd5-6c16-7b78-be30-64eee4b4747c"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get entries - cursor",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:5001/entries/cursor?cursor=eyJJZCI6ImVfMDE5NGY5M2EtYzczNS03OTZkLWI3OWQtMmJmMGVhMWY2ODljIiwiRGF0ZSI6IjIwMjUtMDEtMjQifQ&limit=100",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"entries",
+								"cursor"
+							],
+							"query": [
+								{
+									"key": "cursor",
+									"value": "eyJJZCI6ImVfMDE5NGY5M2EtYzczNS03OTZkLWI3OWQtMmJmMGVhMWY2ODljIiwiRGF0ZSI6IjIwMjUtMDEtMjQifQ"
+								},
+								{
+									"key": "limit",
+									"value": "100"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get entries stats",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:5001/entries/stats",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"entries",
+								"stats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get entry by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:5001/entries/:id?fields=id,value,externalId",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"entries",
+								":id"
+							],
+							"query": [
+								{
+									"key": "fields",
+									"value": "id,value,externalId"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "e_0194f576-34e8-7511-be09-dd3d926c64bf"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Archive entry",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:5001/entries/:id/archive",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"entries",
+								":id",
+								"archive"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "e_0194f576-34e8-7511-be09-dd3d926c64bf"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Un-archive entry",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.dev-habit.hateoas+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:5001/entries/:id/un-archive",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"entries",
+								":id",
+								"un-archive"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "e_0194f576-34e8-7511-be09-dd3d926c64bf"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "HabitTags",
+			"item": [
+				{
+					"name": "Upsert habit tags",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"tagIds\": [\r\n    \"t_01960209-9759-7cbd-80e4-2b2c0972cb95\"\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:5001/habits/:habitId/tags",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"habits",
+								":habitId",
+								"tags"
+							],
+							"variable": [
+								{
+									"key": "habitId",
+									"value": "h_01960210-b119-709a-84db-05387695a7eb"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove habit tag",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:5001/habits/:habitId/tags/:tagId",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"habits",
+								":habitId",
+								"tags",
+								":tagId"
+							],
+							"variable": [
+								{
+									"key": "habitId",
+									"value": "h_0194cc23-4a5a-7036-91ab-d1b24443048c"
+								},
+								{
+									"key": "tagId",
+									"value": "t_0194d0e0-f874-7812-818b-e629f01c213a"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkZXYtaGFiaXQuYXBwIiwiaXNzIjoiZGV2LWhhYml0LmFwaSIsImV4cCI6MTc0Mzg1NTAwOCwic3ViIjoiOTRkNTkxNzctNTAwZC00NWEwLTgzNmMtYzMwNzRiN2IzOTkxIiwiZW1haWwiOiJzZWxjdWtiaWxnZW5AaG90bWFpbC5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJNZW1iZXIiLCJpYXQiOjE3NDM4NTUwMDgsIm5iZiI6MTc0Mzg1NTAwOH0.LFlGONNnKsO2jm5OMOlVDibWjaUXW9hJ8o861vFt_ss",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
