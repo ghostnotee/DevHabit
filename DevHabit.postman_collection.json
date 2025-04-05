@@ -371,7 +371,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"accessToken\": \"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\",\r\n  \"expiresInDays\": 30\r\n}",
+							"raw": "{\r\n  \"accessToken\": \"<YOUR_PERSONAL_TOKEN>\",\r\n  \"expiresInDays\": 30\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
