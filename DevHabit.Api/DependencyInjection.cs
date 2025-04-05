@@ -5,6 +5,7 @@ using DevHabit.Api.Entities;
 using DevHabit.Api.Middleware;
 using DevHabit.Api.Services;
 using DevHabit.Api.Services.Sorting;
+using DevHabit.Api.Settings;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -132,6 +133,24 @@ public static class DependencyInjection
         builder.Services
             .AddIdentity<IdentityUser, IdentityRole>()
             .AddEntityFrameworkStores<ApplicationIdentityDbContext>();
+        return builder;
+    }
+    
+    public static WebApplicationBuilder AddCorsPolicy(this WebApplicationBuilder builder)
+    {
+        CorsOptions corsOptions = builder.Configuration.GetSection(CorsOptions.SectionName).Get<CorsOptions>()!;
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy(CorsOptions.PolicyName, policy =>
+            {
+                policy
+                    .WithOrigins(corsOptions.AllowedOrigins)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            });
+        });
+
         return builder;
     }
 }
