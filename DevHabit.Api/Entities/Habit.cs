@@ -1,6 +1,6 @@
 namespace DevHabit.Api.Entities;
 
-public class Habit
+public sealed class Habit
 {
     public string Id { get; set; }
     public string UserId { get; set; }
@@ -13,49 +13,11 @@ public class Habit
     public bool IsArchived { get; set; }
     public DateOnly? EndDate { get; set; }
     public Milestone? Milestone { get; set; }
+    public AutomationSource? AutomationSource { get; set; }
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? UpdatedAtUtc { get; set; }
     public DateTime? LastCompletedAtUtc { get; set; }
+
     public List<HabitTag> HabitTags { get; set; }
     public List<Tag> Tags { get; set; }
-}
-
-public enum HabitType
-{
-    None = 0,
-    Binary = 1,
-    Measurable = 2
-}
-
-public sealed class Frequency
-{
-    public FrequencyType Type { get; set; }
-    public int TimesPerPeriod { get; set; }
-}
-
-public enum FrequencyType
-{
-    None = 0,
-    Daily = 1,
-    Weekly = 2,
-    Monthly = 3
-}
-
-public sealed class Target
-{
-    public int Value { get; set; }
-    public string Unit { get; set; }
-}
-
-public enum HabitStatus
-{
-    None = 0,
-    OnGoing = 1,
-    Completed = 2
-}
-
-public sealed class Milestone
-{
-    public int Target { get; set; }
-    public int Current { get; set; }
 }

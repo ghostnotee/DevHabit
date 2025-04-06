@@ -1,5 +1,6 @@
 using DevHabit.Api;
 using DevHabit.Api.Extensions;
+using DevHabit.Api.Settings;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +10,9 @@ builder
     .AddDatabase()
     .AddObservability()
     .AddApplicationServices()
-    .AddAuthenticationServices();
+    .AddAuthenticationServices()
+    .AddBackgroundJobs()
+    .AddCorsPolicy();
 
 WebApplication app = builder.Build();
 
@@ -22,6 +25,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseExceptionHandler();
+app.UseCors(CorsOptions.PolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
