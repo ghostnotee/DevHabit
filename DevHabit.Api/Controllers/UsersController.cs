@@ -44,27 +44,21 @@ public sealed class UsersController(ApplicationDbContext dbContext, UserContext 
             .FirstOrDefaultAsync();
 
         if (user is null) return NotFound();
-        
-        if(acceptHeaderDto.IncludeLinks) user.Links = CreateLinksForUser();
+
+        if (acceptHeaderDto.IncludeLinks) user.Links = CreateLinksForUser();
 
         return Ok(user);
     }
-    
+
     [HttpPut("me/profile")]
     public async Task<ActionResult> UpdateProfile(UpdateUserProfileDto dto)
     {
         string? userId = await userContext.GetUserIdAsync();
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            return Unauthorized();
-        }
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
 
         User? user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
-        if (user is null)
-        {
-            return NotFound();
-        }
+        if (user is null) return NotFound();
 
         user.Name = dto.Name;
         user.UpdatedAtUtc = DateTime.UtcNow;
@@ -73,7 +67,7 @@ public sealed class UsersController(ApplicationDbContext dbContext, UserContext 
 
         return NoContent();
     }
-    
+
     private List<LinkDto> CreateLinksForUser()
     {
         List<LinkDto> links =
@@ -81,7 +75,6 @@ public sealed class UsersController(ApplicationDbContext dbContext, UserContext 
             linkService.Create(nameof(GetCurrentUser), "self", HttpMethods.Get),
             linkService.Create(nameof(UpdateProfile), "update-profile", HttpMethods.Put)
         ];
-
         return links;
     }
 }
