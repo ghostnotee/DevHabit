@@ -19,7 +19,7 @@ public sealed class GitHubHabitProcessorJob(
     public async Task Execute(IJobExecutionContext context)
     {
         string habitId = context.JobDetail.JobDataMap.GetString("habitId")
-            ?? throw new InvalidOperationException("HabitId not found in job data");
+                         ?? throw new InvalidOperationException("HabitId not found in job data");
 
         try
         {
@@ -27,9 +27,9 @@ public sealed class GitHubHabitProcessorJob(
 
             // Get the habit and ensure it still exists and is configured for GitHub automation
             Habit? habit = await dbContext.Habits
-                .FirstOrDefaultAsync(h => h.Id == habitId && 
-                    h.AutomationSource == AutomationSource.GitHub && 
-                    !h.IsArchived,
+                .FirstOrDefaultAsync(h => h.Id == habitId &&
+                                          h.AutomationSource == AutomationSource.GitHub &&
+                                          !h.IsArchived,
                     context.CancellationToken);
 
             if (habit is null)
@@ -72,10 +72,7 @@ public sealed class GitHubHabitProcessorJob(
                     perPage,
                     context.CancellationToken);
 
-                if (pageEvents is null || !pageEvents.Any())
-                {
-                    break;
-                }
+                if (pageEvents is null || !pageEvents.Any()) break;
 
                 gitHubEvents.AddRange(pageEvents);
             }
@@ -97,7 +94,7 @@ public sealed class GitHubHabitProcessorJob(
             {
                 // Check if we already have an entry for this event
                 bool exists = await dbContext.Entries.AnyAsync(
-                    e => e.HabitId == habitId && 
+                    e => e.HabitId == habitId &&
                          e.ExternalId == gitHubEventDto.Id,
                     context.CancellationToken);
 
@@ -117,7 +114,7 @@ public sealed class GitHubHabitProcessorJob(
                     Notes =
                         $"""
                          {gitHubEventDto.Actor.Login} pushed:
-                         
+
                          {string.Join(
                              Environment.NewLine,
                              gitHubEventDto.Payload.Commits?.Select(c => $"- {c.Message}") ?? [])}
@@ -130,8 +127,8 @@ public sealed class GitHubHabitProcessorJob(
 
                 dbContext.Entries.Add(entry);
                 logger.LogInformation(
-                    "Created entry for event {EventId} on habit {HabitId}", 
-                    gitHubEventDto.Id, 
+                    "Created entry for event {EventId} on habit {HabitId}",
+                    gitHubEventDto.Id,
                     habitId);
             }
 
@@ -147,4 +144,4 @@ public sealed class GitHubHabitProcessorJob(
             throw;
         }
     }
-} 
+}

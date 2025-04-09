@@ -13,6 +13,5 @@ public sealed class Entry
     public DateOnly Date { get; set; }
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? UpdatedAtUtc { get; set; }
-
     public Habit Habit { get; set; }
 }
