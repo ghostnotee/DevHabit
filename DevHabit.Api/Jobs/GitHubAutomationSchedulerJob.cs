@@ -6,9 +6,7 @@ using Quartz;
 namespace DevHabit.Api.Jobs;
 
 [DisallowConcurrentExecution]
-public sealed class GitHubAutomationSchedulerJob(
-    ApplicationDbContext dbContext,
-    ILogger<GitHubAutomationSchedulerJob> logger) : IJob
+public sealed class GitHubAutomationSchedulerJob(ApplicationDbContext dbContext, ILogger<GitHubAutomationSchedulerJob> logger) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
@@ -49,4 +47,4 @@ public sealed class GitHubAutomationSchedulerJob(
             throw;
         }
     }
-} 
+}
