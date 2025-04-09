@@ -4,12 +4,14 @@ using DevHabit.Api.DTOs.Common;
 using DevHabit.Api.DTOs.Tags;
 using DevHabit.Api.Entities;
 using DevHabit.Api.Services;
+using DevHabit.Api.Settings;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace DevHabit.Api.Controllers;
 
@@ -24,7 +26,7 @@ namespace DevHabit.Api.Controllers;
 public sealed class TagsController(ApplicationDbContext dbContext, LinkService linkService, UserContext userContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<TagsCollectionDto>> GetTags([FromHeader] AcceptHeaderDto acceptHeader)
+    public async Task<ActionResult<TagsCollectionDto>> GetTags([FromHeader] AcceptHeaderDto acceptHeader, IOptions<TagsOptions> options)
     {
         string? userId = await userContext.GetUserIdAsync();
         if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
@@ -40,7 +42,7 @@ public sealed class TagsController(ApplicationDbContext dbContext, LinkService l
             Items = tags
         };
 
-        if (acceptHeader.IncludeLinks) habitsCollectionDto.Links = CreateLinksForTags();
+        if (acceptHeader.IncludeLinks) habitsCollectionDto.Links = CreateLinksForTags(tags.Count, options.Value.MaxAllowedTags);
 
         return Ok(habitsCollectionDto);
     }
@@ -133,13 +135,14 @@ public sealed class TagsController(ApplicationDbContext dbContext, LinkService l
         return NoContent();
     }
 
-    private List<LinkDto> CreateLinksForTags()
+    private List<LinkDto> CreateLinksForTags(int tagsCount, int maxAllowedTags)
     {
         List<LinkDto> links =
         [
-            linkService.Create(nameof(GetTags), "self", HttpMethods.Get),
-            linkService.Create(nameof(CreateTag), "create", HttpMethods.Post)
+            linkService.Create(nameof(GetTags), "self", HttpMethods.Get)
         ];
+
+        if (tagsCount < maxAllowedTags) links.Add(linkService.Create(nameof(CreateTag), "create", HttpMethods.Post));
 
         return links;
     }
