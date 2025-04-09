@@ -17,6 +17,7 @@ namespace DevHabit.Api.Controllers;
 
 [ApiController]
 [Route("tags")]
+[ResponseCache(Duration = 120)]
 [Authorize(Roles = Roles.Member)]
 [Produces(
     MediaTypeNames.Application.Json,
