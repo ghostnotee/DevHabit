@@ -17,6 +17,11 @@ interface GetEntriesOptions {
   sort: string;
 }
 
+interface GetEntriesCursorOptions {
+  limit?: number;
+  url?: string;
+}
+
 export function useEntries() {
   const { accessToken } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +46,30 @@ export function useEntries() {
           },
         }
       );
+      return result;
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch entries');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getEntriesCursor = async ({
+    limit = 10,
+    url,
+  }: GetEntriesCursorOptions): Promise<EntriesResponse | null> => {
+    if (!accessToken) return null;
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const endpoint = url || `${API_BASE_URL}/entries/cursor?limit=${limit}`;
+      const result = await fetchWithAuth<EntriesResponse>(endpoint, accessToken, {
+        headers: {
+          Accept: 'application/vnd.dev-habit.hateoas+json',
+        },
+      });
       return result;
     } catch (err: any) {
       setError(err.message || 'Failed to fetch entries');
@@ -217,6 +246,7 @@ export function useEntries() {
 
   return {
     getEntries,
+    getEntriesCursor,
     getEntry,
     createEntry,
     createBatchEntries,
