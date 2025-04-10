@@ -48,7 +48,7 @@ public sealed class TagsController(ApplicationDbContext dbContext, LinkService l
         return Ok(habitsCollectionDto);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id}")] 
     public async Task<ActionResult<TagDto>> GetTag(string id, [FromHeader] AcceptHeaderDto acceptHeader)
     {
         string? userId = await userContext.GetUserIdAsync();
@@ -107,7 +107,7 @@ public sealed class TagsController(ApplicationDbContext dbContext, LinkService l
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateTag(string id, UpdateTagDto updateTagDto)
+    public async Task<ActionResult> UpdateTag(string id, UpdateTagDto updateTagDto, InMemoryETagStore etagStore)
     {
         string? userId = await userContext.GetUserIdAsync();
         if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
@@ -118,6 +118,8 @@ public sealed class TagsController(ApplicationDbContext dbContext, LinkService l
         tag.UpdateFromDto(updateTagDto);
         await dbContext.SaveChangesAsync();
 
+        etagStore.SetETag(Request.Path.Value!, tag.ToDto());
+        
         return NoContent();
     }
 
