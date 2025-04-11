@@ -139,6 +139,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<UserContext>();
         builder.Services.AddScoped<GitHubAccessTokenService>();
         builder.Services.AddTransient<GitHubService>();
+        builder.Services.AddHttpClient().ConfigureHttpClientDefaults(b => b.AddStandardResilienceHandler());
         builder.Services.AddHttpClient("github")
             .ConfigureHttpClient(client =>
             {
@@ -146,10 +147,32 @@ public static class DependencyInjection
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("DevHabit", "1.0"));
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
             });
+        builder.Services.AddTransient<DelayHandler>();
         builder.Services.AddTransient<RefitGitHubService>();
         builder.Services
             .AddRefitClient<IGithubApi>(new RefitSettings { ContentSerializer = new NewtonsoftJsonContentSerializer() })
-            .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://api.github.com"));
+            .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://api.github.com"))
+            .AddHttpMessageHandler<DelayHandler>();
+        //.InternalRemoveAllResilienceHandlers()
+        // .AddResilienceHandler("custom", pipelineBuilder =>
+        // {
+        //     pipelineBuilder.AddTimeout(TimeSpan.FromSeconds(5));
+        //     pipelineBuilder.AddRetry(new HttpRetryStrategyOptions
+        //     {
+        //         MaxRetryAttempts = 3,
+        //         BackoffType = DelayBackoffType.Exponential,
+        //         UseJitter = true,
+        //         Delay = TimeSpan.FromMilliseconds(500)
+        //     });
+        //     pipelineBuilder.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
+        //     {
+        //         SamplingDuration = TimeSpan.FromSeconds(10),
+        //         FailureRatio = 0.9,
+        //         MinimumThroughput = 5,
+        //         BreakDuration = TimeSpan.FromSeconds(5)
+        //     });
+        //     pipelineBuilder.AddTimeout(TimeSpan.FromSeconds(1));
+        // });
 
         builder.Services.Configure<EncryptionOptions>(builder.Configuration.GetSection(EncryptionOptions.SectionName));
         builder.Services.AddTransient<EncryptionService>();
