@@ -6,14 +6,17 @@ using DevHabit.Api.DTOs.Common;
 using DevHabit.Api.DTOs.Entries;
 using DevHabit.Api.Entities;
 using DevHabit.Api.Services;
+using DevHabit.Api.Services.Idempotency;
 using DevHabit.Api.Services.Sorting;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace DevHabit.Api.Controllers;
 
+[EnableRateLimiting("default")]
 [Authorize(Roles = Roles.Member)]
 [ApiController]
 [Route("entries")]
@@ -165,6 +168,7 @@ public sealed class EntriesController(
     }
 
     [HttpPost]
+    [IdempotentRequest]
     public async Task<ActionResult<EntryDto>> CreateEntry(CreateEntryDto createEntryDto, [FromHeader] AcceptHeaderDto acceptHeader,
         IValidator<CreateEntryDto> validator)
     {

@@ -1,10 +1,12 @@
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.RateLimiting;
 using Asp.Versioning;
 using DevHabit.Api.Database;
 using DevHabit.Api.DTOs.Entries;
 using DevHabit.Api.DTOs.Habits;
 using DevHabit.Api.Entities;
+using DevHabit.Api.Extensions;
 using DevHabit.Api.Jobs;
 using DevHabit.Api.Middleware;
 using DevHabit.Api.Services;
@@ -15,6 +17,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.IdentityModel.Tokens;
@@ -26,6 +29,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Quartz;
 using Refit;
+using ProblemDetails = Microsoft.AspNetCore.Mvc.ProblemDetails;
 
 namespace DevHabit.Api;
 
@@ -139,6 +143,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<UserContext>();
         builder.Services.AddScoped<GitHubAccessTokenService>();
         builder.Services.AddTransient<GitHubService>();
+        builder.Services.AddHttpClient().ConfigureHttpClientDefaults(b => b.AddStandardResilienceHandler());
         builder.Services.AddHttpClient("github")
             .ConfigureHttpClient(client =>
             {
@@ -146,10 +151,32 @@ public static class DependencyInjection
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("DevHabit", "1.0"));
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
             });
+        builder.Services.AddTransient<DelayHandler>();
         builder.Services.AddTransient<RefitGitHubService>();
         builder.Services
             .AddRefitClient<IGithubApi>(new RefitSettings { ContentSerializer = new NewtonsoftJsonContentSerializer() })
-            .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://api.github.com"));
+            .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://api.github.com"))
+            .AddHttpMessageHandler<DelayHandler>();
+        //.InternalRemoveAllResilienceHandlers()
+        // .AddResilienceHandler("custom", pipelineBuilder =>
+        // {
+        //     pipelineBuilder.AddTimeout(TimeSpan.FromSeconds(5));
+        //     pipelineBuilder.AddRetry(new HttpRetryStrategyOptions
+        //     {
+        //         MaxRetryAttempts = 3,
+        //         BackoffType = DelayBackoffType.Exponential,
+        //         UseJitter = true,
+        //         Delay = TimeSpan.FromMilliseconds(500)
+        //     });
+        //     pipelineBuilder.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
+        //     {
+        //         SamplingDuration = TimeSpan.FromSeconds(10),
+        //         FailureRatio = 0.9,
+        //         MinimumThroughput = 5,
+        //         BreakDuration = TimeSpan.FromSeconds(5)
+        //     });
+        //     pipelineBuilder.AddTimeout(TimeSpan.FromSeconds(1));
+        // });
 
         builder.Services.Configure<EncryptionOptions>(builder.Configuration.GetSection(EncryptionOptions.SectionName));
         builder.Services.AddTransient<EncryptionService>();
@@ -191,6 +218,7 @@ public static class DependencyInjection
     {
         builder.Services.AddQuartz(q =>
         {
+            // GitHub automation scheduler
             q.AddJob<GitHubAutomationSchedulerJob>(opts => opts.WithIdentity("github-automation-scheduler"));
 
             q.AddTrigger(opts => opts
@@ -205,6 +233,12 @@ public static class DependencyInjection
                     s.WithIntervalInMinutes(settings.ScanIntervalMinutes)
                         .RepeatForever();
                 }));
+            // Entry import cleanup job - runs daily at 3 AM UTC
+            q.AddJob<CleanupEntryImportJobsJob>(opts => opts.WithIdentity("cleanup-entry-imports"));
+            q.AddTrigger(opts => opts
+                .ForJob("cleanup-entry-imports")
+                .WithIdentity("cleanup-entry-imports-trigger")
+                .WithCronSchedule("0 0 3 * * ?", x => x.InTimeZone(TimeZoneInfo.Utc)));
         });
         builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
 
@@ -223,6 +257,50 @@ public static class DependencyInjection
                     .WithOrigins(corsOptions.AllowedOrigins)
                     .AllowAnyMethod()
                     .AllowAnyHeader();
+            });
+        });
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddRateLimiting(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.OnRejected = async (context, token) =>
+            {
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
+                {
+                    context.HttpContext.Response.Headers.RetryAfter = $"{retryAfter.TotalSeconds}";
+                    ProblemDetailsFactory problemDetailsFactory = context.HttpContext.RequestServices.GetRequiredService<ProblemDetailsFactory>();
+                    ProblemDetails problemDetails = problemDetailsFactory.CreateProblemDetails(
+                        context.HttpContext,
+                        StatusCodes.Status429TooManyRequests, "Too Many Requests",
+                        detail: $"Too many requests. Please try again after {retryAfter.TotalSeconds} seconds.");
+                    await context.HttpContext.Response.WriteAsJsonAsync(problemDetails, token);
+                }
+            };
+
+            options.AddPolicy("default", context =>
+            {
+                string userName = context.User.GetIdentityId() ?? string.Empty;
+                if (!string.IsNullOrEmpty(userName))
+                    return RateLimitPartition.GetTokenBucketLimiter(userName, _ =>
+                        new TokenBucketRateLimiterOptions
+                        {
+                            TokenLimit = 100,
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 5,
+                            ReplenishmentPeriod = TimeSpan.FromMinutes(1),
+                            TokensPerPeriod = 25
+                        });
+                return RateLimitPartition.GetFixedWindowLimiter("anonymous", _ =>
+                    new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(1)
+                    });
             });
         });
 
