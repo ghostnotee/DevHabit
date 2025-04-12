@@ -75,7 +75,8 @@ export const EntriesPage: React.FC = () => {
   const [nextPageLink, setNextPageLink] = useState<HypermediaLink | null>(null);
   const [prevPageLink, setPrevPageLink] = useState<HypermediaLink | null>(null);
 
-  const { getEntriesCursor, deleteEntry, archiveEntry, unarchiveEntry, isLoading, error } = useEntries();
+  const { getEntriesCursor, deleteEntry, archiveEntry, unarchiveEntry, isLoading, error } =
+    useEntries();
 
   useEffect(() => {
     loadEntries();
@@ -83,7 +84,7 @@ export const EntriesPage: React.FC = () => {
 
   const loadEntries = async (url?: string) => {
     const result = await getEntriesCursor({
-      limit: 50,
+      limit: 6,
       url,
     });
     if (result) {
@@ -162,6 +163,12 @@ export const EntriesPage: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">My Entries</h1>
         <div className="space-x-4">
+          <button
+            onClick={() => navigate('/entries/imports')}
+            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 cursor-pointer"
+          >
+            Import Entries
+          </button>
           <button
             onClick={() => {
               const createBatchLink = entriesResponse?.links?.find(
