@@ -2,8 +2,14 @@
   <Folder Name="/Solution Items/">
     <File Path="compose.yaml" />
     <File Path="compose.override.yaml" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path=".editorconfig" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="DevHabit.Api\DevHabit.Api.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test\DevHabit.UnitTests\DevHabit.UnitTests.csproj" Type="Classic C#" />
   </Folder>
 </Solution>
