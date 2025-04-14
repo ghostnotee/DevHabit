@@ -32,5 +32,9 @@
             <Link>.dockerignore</Link>
         </Content>
     </ItemGroup>
+    
+    <ItemGroup>
+        <InternalsVisibleTo Include="DevHabit.Api.Tests" />
+    </ItemGroup>
 
 </Project>
