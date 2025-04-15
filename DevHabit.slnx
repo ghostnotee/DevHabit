@@ -12,4 +12,5 @@
   <Folder Name="/test/">
     <Project Path="test\DevHabit.UnitTests\DevHabit.UnitTests.csproj" Type="Classic C#" />
   </Folder>
+  <Project Path="test\DevHabit.IntegrationTests\DevHabit.IntegrationTests.csproj" Type="Classic C#" />
 </Solution>
