@@ -33,3 +33,6 @@ app.UseRateLimiter();
 //app.UseMiddleware<ETagMiddleware>();
 app.MapControllers();
 await app.RunAsync();
+
+// For Integration Tests
+public partial class Program;
