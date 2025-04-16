@@ -1,7 +1,7 @@
-using DevHabit.Api.DTOs.Entries;
 using DevHabit.Api.DTOs.Habits;
 using DevHabit.Api.DTOs.HabitTags;
 using DevHabit.Api.DTOs.Tags;
+using DevHabit.Api.DTOs.Entries;
 using DevHabit.Api.Entities;
 
 namespace DevHabit.IntegrationTests.Infrastructure;
@@ -60,7 +60,7 @@ public static class TestData
     {
         public static UpsertHabitTagsDto CreateUpsertDto(params string[] tagIds) => new()
         {
-            TagIds = [.. tagIds]
+            TagIds = tagIds.ToList()
         };
     }
 
@@ -92,12 +92,12 @@ public static class TestData
         public static CreateEntryBatchDto CreateBatch(string habitId, params (DateOnly Date, int Value)[] entries) =>
             new()
             {
-                Entries = [.. entries.Select(e => new CreateEntryDto
+                Entries = entries.Select(e => new CreateEntryDto()
                 {
                     HabitId = habitId,
-                    Date = e.Date,
-                    Value = e.Value
-                })]
+                    Date = e.Date, 
+                    Value = e.Value 
+                }).ToList()
             };
     }
-}
+} 
