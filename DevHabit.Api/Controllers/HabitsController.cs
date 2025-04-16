@@ -186,11 +186,27 @@ public sealed class HabitsController(ApplicationDbContext dbContext, LinkService
     public async Task<ActionResult> UpdateHabit(string id, UpdateHabitDto updateHabitDto)
     {
         string? userId = await userContext.GetUserIdAsync();
-        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
 
         Habit? habit = await dbContext.Habits.FirstOrDefaultAsync(h => h.Id == id && h.UserId == userId);
 
-        if (habit is null) return NotFound();
+        if (habit is null)
+        {
+            return NotFound();
+        }
+
+        if (habit.AutomationSource is null &&
+            updateHabitDto.AutomationSource is not null &&
+            await dbContext.Habits.AnyAsync(
+                h => h.UserId == userId && h.AutomationSource == updateHabitDto.AutomationSource))
+        {
+            return Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                detail: $"Only one habit with this automation source is allowed: '{habit.AutomationSource}'");
+        }
 
         habit.UpdateFromDto(updateHabitDto);
 

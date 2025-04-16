@@ -10,7 +10,7 @@ public sealed record UpdateHabitDto
     public FrequencyDto Frequency { get; init; }
     public TargetDto Target { get; init; }
     public DateOnly? EndDate { get; init; }
-    public UpdateMilestoneDto Milestone { get; init; }
+    public UpdateMilestoneDto? Milestone { get; init; }
     public AutomationSource? AutomationSource { get; init; }
 }
 
