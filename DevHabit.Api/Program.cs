@@ -30,7 +30,8 @@ app.UseCors(CorsOptions.PolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
-//app.UseMiddleware<ETagMiddleware>();
+app.UseUserContextEnrichment();
+// //app.UseETag();
 app.MapControllers();
 await app.RunAsync();
 

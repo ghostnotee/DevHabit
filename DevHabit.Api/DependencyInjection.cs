@@ -147,7 +147,7 @@ public static class DependencyInjection
         builder.Services.AddHttpClient("github")
             .ConfigureHttpClient(client =>
             {
-                client.BaseAddress = new Uri("https://api.github.com");
+                client.BaseAddress = new Uri(builder.Configuration.GetSection("Github:BaseUrl").Get<string>()!);
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("DevHabit", "1.0"));
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
             });
@@ -155,7 +155,7 @@ public static class DependencyInjection
         builder.Services.AddTransient<RefitGitHubService>();
         builder.Services
             .AddRefitClient<IGithubApi>(new RefitSettings { ContentSerializer = new NewtonsoftJsonContentSerializer() })
-            .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://api.github.com"))
+            .ConfigureHttpClient(client => client.BaseAddress = new Uri(builder.Configuration.GetSection("Github:BaseUrl").Get<string>()!))
             .AddHttpMessageHandler<DelayHandler>();
         //.InternalRemoveAllResilienceHandlers()
         // .AddResilienceHandler("custom", pipelineBuilder =>

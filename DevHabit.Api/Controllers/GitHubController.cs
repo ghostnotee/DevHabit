@@ -2,6 +2,7 @@ using DevHabit.Api.DTOs.Common;
 using DevHabit.Api.DTOs.GitHub;
 using DevHabit.Api.Entities;
 using DevHabit.Api.Services;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,8 +18,9 @@ public sealed class GitHubController(
     LinkService linkService) : ControllerBase
 {
     [HttpPut("personal-access-token")]
-    public async Task<IActionResult> StoreAccessToken(StoreGitHubAccessTokenDto storeGitHubAccessTokenDto)
+    public async Task<IActionResult> StoreAccessToken(StoreGitHubAccessTokenDto storeGitHubAccessTokenDto, IValidator<StoreGitHubAccessTokenDto> validator)
     {
+        await validator.ValidateAndThrowAsync(storeGitHubAccessTokenDto);
         string? userId = await userContext.GetUserIdAsync();
         if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
 
@@ -59,5 +61,23 @@ public sealed class GitHubController(
             ];
 
         return Ok(userProfile);
+    }
+
+    [HttpGet("events")]
+    public async Task<ActionResult<IReadOnlyList<GitHubEventDto>>> GetUserEvents()
+    {
+        string? userId = await userContext.GetUserIdAsync();
+        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+
+        string? accessToken = await gitHubAccessTokenService.GetAsync(userId);
+        if (string.IsNullOrWhiteSpace(accessToken)) return Unauthorized();
+
+        GitHubUserProfileDto? userProfile = await gitHubService.GetUserProfileAsync(accessToken);
+        if (userProfile is null) return NotFound();
+
+        IReadOnlyList<GitHubEventDto>? events = await gitHubService.GetUserEventsAsync(userProfile.Login, accessToken);
+        if (events is null) return NotFound();
+
+        return Ok(events);
     }
 }

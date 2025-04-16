@@ -4,6 +4,7 @@ using DevHabit.Api.DTOs.Users;
 using DevHabit.Api.Entities;
 using DevHabit.Api.Services;
 using DevHabit.Api.Settings;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -26,8 +27,9 @@ public sealed class AuthController(
     private readonly JwtAuthOptions _jwtAuthOptions = options.Value;
 
     [HttpPost("register")]
-    public async Task<ActionResult<AccessTokensDto>> Register(RegisterUserDto registerUserDto)
+    public async Task<ActionResult<AccessTokensDto>> Register(RegisterUserDto registerUserDto, IValidator<RegisterUserDto> validator)
     {
+        await validator.ValidateAndThrowAsync(registerUserDto);
         await using IDbContextTransaction transaction = await identityDbContext.Database.BeginTransactionAsync();
         applicationDbContext.Database.SetDbConnection(identityDbContext.Database.GetDbConnection());
         await applicationDbContext.Database.UseTransactionAsync(transaction.GetDbTransaction());
@@ -58,6 +60,7 @@ public sealed class AuthController(
             };
             return Problem("Unable to register user", statusCode: StatusCodes.Status400BadRequest, extensions: extensions);
         }
+
         User user = registerUserDto.ToEntity();
         user.IdentityId = identityUser.Id;
 
@@ -83,13 +86,14 @@ public sealed class AuthController(
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<AccessTokensDto>> Login(LoginUserDto loginUserDto)
+    public async Task<ActionResult<AccessTokensDto>> Login(LoginUserDto loginUserDto, IValidator<LoginUserDto> validator)
     {
+        await validator.ValidateAndThrowAsync(loginUserDto);
         IdentityUser? identityUser = await userManager.FindByEmailAsync(loginUserDto.Email);
         if (identityUser is null || !await userManager.CheckPasswordAsync(identityUser, loginUserDto.Password)) return Unauthorized();
 
         IList<string> roles = await userManager.GetRolesAsync(identityUser);
-        
+
         var tokenRequest = new TokenRequest(identityUser.Id, identityUser.Email!, roles);
         AccessTokensDto accessTokens = tokenProvider.Create(tokenRequest);
 
@@ -107,17 +111,18 @@ public sealed class AuthController(
     }
 
     [HttpPost("refresh")]
-    public async Task<ActionResult<AccessTokensDto>> Refresh(RefreshTokenDto refreshTokenDto)
+    public async Task<ActionResult<AccessTokensDto>> Refresh(RefreshTokenDto refreshTokenDto, IValidator<RefreshTokenDto> validator)
     {
+        await validator.ValidateAndThrowAsync(refreshTokenDto);
         RefreshToken? refreshToken = await identityDbContext.RefreshTokens
             .Include(token => token.User)
             .FirstOrDefaultAsync(token => token.Token == refreshTokenDto.RefreshToken);
 
         if (refreshToken is null) return Unauthorized();
         if (refreshToken.ExpiresAtUtc < DateTime.UtcNow) return Unauthorized();
-        
+
         IList<string> roles = await userManager.GetRolesAsync(refreshToken.User);
-        
+
         var tokenRequest = new TokenRequest(refreshToken.User.Id, refreshToken.User.Email!, roles);
         AccessTokensDto accessTokens = tokenProvider.Create(tokenRequest);
         refreshToken.Token = accessTokens.RefreshToken;
