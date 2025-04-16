@@ -26,23 +26,33 @@ namespace DevHabit.Api.Controllers;
     CustomMediaTypeNames.Application.JsonV1,
     CustomMediaTypeNames.Application.HateoasJson,
     CustomMediaTypeNames.Application.HateoasJsonV1)]
-public sealed class EntriesController(
-    ApplicationDbContext dbContext,
-    LinkService linkService,
-    UserContext userContext) : ControllerBase
+public sealed class EntriesController(ApplicationDbContext dbContext, LinkService linkService, UserContext userContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetEntries([FromQuery] EntriesQueryParameters query, SortMappingProvider sortMappingProvider,
+    public async Task<IActionResult> GetEntries(
+        [FromQuery] EntriesQueryParameters query,
+        SortMappingProvider sortMappingProvider,
         DataShapingService dataShapingService)
     {
         string? userId = await userContext.GetUserIdAsync();
-        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
 
         if (!sortMappingProvider.ValidateMappings<EntryDto, Entry>(query.Sort))
-            return Problem(statusCode: StatusCodes.Status400BadRequest, detail: $"The provided sort parameter isn't valid: '{query.Sort}'");
+        {
+            return Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                detail: $"The provided sort parameter isn't valid: '{query.Sort}'");
+        }
 
         if (!dataShapingService.Validate<EntryDto>(query.Fields))
-            return Problem(statusCode: StatusCodes.Status400BadRequest, detail: $"The provided data shaping fields aren't valid: '{query.Fields}'");
+        {
+            return Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                detail: $"The provided data shaping fields aren't valid: '{query.Fields}'");
+        }
 
         SortMapping[] sortMappings = sortMappingProvider.GetMappings<EntryDto, Entry>();
 
@@ -75,10 +85,12 @@ public sealed class EntriesController(
         };
 
         if (query.IncludeLinks)
+        {
             paginationResult.Links = CreateLinksForEntries(
                 query,
                 paginationResult.HasNextPage,
                 paginationResult.HasPreviousPage);
+        }
 
         return Ok(paginationResult);
     }
@@ -168,7 +180,7 @@ public sealed class EntriesController(
     }
 
     [HttpPost]
-    [IdempotentRequest]
+    //[IdempotentRequest]
     public async Task<ActionResult<EntryDto>> CreateEntry(CreateEntryDto createEntryDto, [FromHeader] AcceptHeaderDto acceptHeader,
         IValidator<CreateEntryDto> validator)
     {
