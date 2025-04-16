@@ -10,6 +10,7 @@ internal static class HabitQueries
         return h => new HabitDto
         {
             Id = h.Id,
+            UserId = h.UserId,
             Name = h.Name,
             Description = h.Description,
             Type = h.Type,
@@ -33,6 +34,7 @@ internal static class HabitQueries
                     Target = h.Milestone.Target,
                     Current = h.Milestone.Current
                 },
+            AutomationSource = h.AutomationSource,
             CreatedAtUtc = h.CreatedAtUtc,
             UpdatedAtUtc = h.UpdatedAtUtc,
             LastCompletedAtUtc = h.LastCompletedAtUtc

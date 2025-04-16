@@ -37,6 +37,7 @@ internal static class HabitMappings
         return new HabitDto
         {
             Id = habit.Id,
+            UserId = habit.UserId,
             Name = habit.Name,
             Description = habit.Description,
             Type = habit.Type,
@@ -53,13 +54,14 @@ internal static class HabitMappings
             Status = habit.Status,
             IsArchived = habit.IsArchived,
             EndDate = habit.EndDate,
-            Milestone = habit.Milestone is not null
-                ? new MilestoneDto
+            Milestone = habit.Milestone == null
+                ? null
+                : new MilestoneDto
                 {
                     Target = habit.Milestone.Target,
                     Current = habit.Milestone.Current
-                }
-                : null,
+                },
+            AutomationSource = habit.AutomationSource,
             CreatedAtUtc = habit.CreatedAtUtc,
             UpdatedAtUtc = habit.UpdatedAtUtc,
             LastCompletedAtUtc = habit.LastCompletedAtUtc
