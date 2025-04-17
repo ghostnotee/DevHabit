@@ -8,9 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using WireMock.Server;
 
-namespace DevHabit.IntegrationTests.Infrastructure;
+namespace DevHabit.FunctionalTests.Infrastructure;
 
-public abstract class IntegrationTestFixture(DevHabitWebAppFactory factory) : IClassFixture<DevHabitWebAppFactory>
+//[Collection(nameof(FunctionalTestCollection))]
+public abstract class FunctionalTestFixture(DevHabitWebAppFactory factory) : IClassFixture<DevHabitWebAppFactory>
 {
     private HttpClient? _authorizedClient;
 
@@ -24,7 +25,10 @@ public abstract class IntegrationTestFixture(DevHabitWebAppFactory factory) : IC
         IConfiguration configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
         string? connectionString = configuration.GetConnectionString("Database");
-        if (connectionString is null) throw new InvalidOperationException("Database connection string not found in configuration");
+        if (connectionString is null)
+        {
+            throw new InvalidOperationException("Database connection string not found in configuration");
+        }
 
         await using NpgsqlConnection connection = new(connectionString);
         await connection.OpenAsync();
@@ -52,7 +56,10 @@ public abstract class IntegrationTestFixture(DevHabitWebAppFactory factory) : IC
         string password = "Test123!",
         bool forceNewClient = false)
     {
-        if (_authorizedClient is not null && !forceNewClient) return _authorizedClient;
+        if (_authorizedClient is not null && !forceNewClient)
+        {
+            return _authorizedClient;
+        }
 
         HttpClient client = CreateClient();
 
@@ -91,10 +98,16 @@ public abstract class IntegrationTestFixture(DevHabitWebAppFactory factory) : IC
 
         AccessTokensDto? loginResult = await loginResponse.Content.ReadFromJsonAsync<AccessTokensDto>();
 
-        if (loginResult?.AccessToken is null) throw new InvalidOperationException("Failed to get authentication token");
+        if (loginResult?.AccessToken is null)
+        {
+            throw new InvalidOperationException("Failed to get authentication token");
+        }
 
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult.AccessToken);
-        if (!forceNewClient) _authorizedClient = client;
+        if (!forceNewClient)
+        {
+            _authorizedClient = client;
+        }
 
         return client;
     }

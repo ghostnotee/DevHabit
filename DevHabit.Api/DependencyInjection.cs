@@ -151,12 +151,12 @@ public static class DependencyInjection
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("DevHabit", "1.0"));
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
             });
-        builder.Services.AddTransient<DelayHandler>();
+        //builder.Services.AddTransient<DelayHandler>();
         builder.Services.AddTransient<RefitGitHubService>();
         builder.Services
             .AddRefitClient<IGithubApi>(new RefitSettings { ContentSerializer = new NewtonsoftJsonContentSerializer() })
-            .ConfigureHttpClient(client => client.BaseAddress = new Uri(builder.Configuration.GetSection("Github:BaseUrl").Get<string>()!))
-            .AddHttpMessageHandler<DelayHandler>();
+            .ConfigureHttpClient(client => client.BaseAddress = new Uri(builder.Configuration.GetSection("Github:BaseUrl").Get<string>()!));
+            //.AddHttpMessageHandler<DelayHandler>();
         //.InternalRemoveAllResilienceHandlers()
         // .AddResilienceHandler("custom", pipelineBuilder =>
         // {
