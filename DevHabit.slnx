@@ -10,6 +10,7 @@
     <Project Path="DevHabit.Api\DevHabit.Api.csproj" Type="Classic C#" />
   </Folder>
   <Folder Name="/test/">
+    <Project Path="test\DevHabit.FunctionalTests\DevHabit.FunctionalTests.csproj" Type="Classic C#" />
     <Project Path="test\DevHabit.IntegrationTests\DevHabit.IntegrationTests.csproj" Type="Classic C#" />
     <Project Path="test\DevHabit.UnitTests\DevHabit.UnitTests.csproj" Type="Classic C#" />
   </Folder>
