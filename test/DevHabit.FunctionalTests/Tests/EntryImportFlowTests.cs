@@ -60,7 +60,7 @@ public sealed class EntryImportFlowTests(DevHabitWebAppFactory factory) : Functi
             {createdHabit.Id},2024-01-03,35,Third day of reading
             """;
 
-        // Step 5: Create and submit import job
+        // Step 5: Create and submit an import job
         using var content = new MultipartFormDataContent();
         using var fileContent = new ByteArrayContent(Encoding.UTF8.GetBytes(csvContent));
         fileContent.Headers.ContentType = new("text/csv");
@@ -71,7 +71,7 @@ public sealed class EntryImportFlowTests(DevHabitWebAppFactory factory) : Functi
         EntryImportJobDto? importJob = await importResponse.Content.ReadFromJsonAsync<EntryImportJobDto>();
         Assert.NotNull(importJob);
 
-        // Step 6: Wait for import job to complete (with timeout)
+        // Step 6: Wait for an import job to complete (with timeout)
         const int maxAttempts = 10;
         const int delayMs = 500;
         EntryImportJobDto? completedJob = null;
