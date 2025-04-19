@@ -19,7 +19,13 @@ WebApplication app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    /*app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "DevHabit API V1");
+    });*/
+    app.UseSwagger();
+    app.UseSwaggerUI();
     await app.ApplyMigrationsAsync();
     await app.SeedInitialDataAsync();
 }
