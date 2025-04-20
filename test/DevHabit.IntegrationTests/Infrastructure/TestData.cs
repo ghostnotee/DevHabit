@@ -60,7 +60,7 @@ public static class TestData
     {
         public static UpsertHabitTagsDto CreateUpsertDto(params string[] tagIds) => new()
         {
-            TagIds = tagIds.ToList()
+            TagIds = [.. tagIds]
         };
     }
 
