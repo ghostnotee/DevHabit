@@ -24,18 +24,29 @@ namespace DevHabit.Api.Controllers;
     CustomMediaTypeNames.Application.JsonV1,
     CustomMediaTypeNames.Application.HateoasJson,
     CustomMediaTypeNames.Application.HateoasJsonV1)]
+[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+[ProducesResponseType(StatusCodes.Status403Forbidden)]
 public sealed class TagsController(
     ApplicationDbContext dbContext,
     LinkService linkService,
     UserContext userContext,
     IOptions<TagsOptions> options) : ControllerBase
 {
+    /// <summary>
+    /// Retrieves all tags for the current user
+    /// </summary>
+    /// <param name="acceptHeader">Controls HATEOAS link generation</param>
+    /// <returns>Collection of tags</returns>
     [HttpGet]
+    [ProducesResponseType<TagsCollectionDto>(StatusCodes.Status200OK)]
     public async Task<ActionResult<TagsCollectionDto>> GetTags(
         [FromHeader] AcceptHeaderDto acceptHeader)
     {
         string? userId = await userContext.GetUserIdAsync();
-        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
 
         List<TagDto> tags = await dbContext
             .Tags
@@ -51,17 +62,31 @@ public sealed class TagsController(
         if (acceptHeader.IncludeLinks)
         {
             tagsCollectionDto.Links = CreateLinksForTags(tags.Count, options.Value.MaxAllowedTags);
-            foreach (TagDto tagDto in tagsCollectionDto.Items) tagDto.Links = CreateLinksForTag(tagDto.Id);
+            foreach (TagDto tagDto in tagsCollectionDto.Items)
+            {
+                tagDto.Links = CreateLinksForTag(tagDto.Id);
+            }
         }
 
         return Ok(tagsCollectionDto);
     }
 
+    /// <summary>
+    /// Retrieves a specific tag by ID
+    /// </summary>
+    /// <param name="id">The tag ID</param>
+    /// <param name="acceptHeader">Controls HATEOAS link generation</param>
+    /// <returns>The requested tag</returns>
     [HttpGet("{id}")]
+    [ProducesResponseType<TagDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TagDto>> GetTag(string id, [FromHeader] AcceptHeaderDto acceptHeader)
     {
         string? userId = await userContext.GetUserIdAsync();
-        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
 
         TagDto? tag = await dbContext
             .Tags
@@ -69,14 +94,31 @@ public sealed class TagsController(
             .Select(TagQueries.ProjectToDto())
             .FirstOrDefaultAsync();
 
-        if (tag is null) return NotFound();
+        if (tag is null)
+        {
+            return NotFound();
+        }
 
-        if (acceptHeader.IncludeLinks) tag.Links = CreateLinksForTag(id);
+        if (acceptHeader.IncludeLinks)
+        {
+            tag.Links = CreateLinksForTag(id);
+        }
 
         return Ok(tag);
     }
 
+    /// <summary>
+    /// Creates a new tag
+    /// </summary>
+    /// <param name="createTagDto">The tag creation details</param>
+    /// <param name="acceptHeader">Controls HATEOAS link generation</param>
+    /// <param name="validator">Validator for the creation request</param>
+    /// <param name="problemDetailsFactory">Factory for creating problem details</param>
+    /// <returns>The created tag</returns>
     [HttpPost]
+    [ProducesResponseType<TagDto>(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<TagDto>> CreateTag(
         CreateTagDto createTagDto,
         [FromHeader] AcceptHeaderDto acceptHeader,
@@ -84,7 +126,10 @@ public sealed class TagsController(
         ProblemDetailsFactory problemDetailsFactory)
     {
         string? userId = await userContext.GetUserIdAsync();
-        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
 
         ValidationResult validationResult = await validator.ValidateAsync(createTagDto);
 
@@ -99,16 +144,20 @@ public sealed class TagsController(
         }
 
         if (await dbContext.Tags.CountAsync(t => t.UserId == userId) >= options.Value.MaxAllowedTags)
+        {
             return Problem(
-                "Reached the maximum number of allowed tags",
+                detail: "Reached the maximum number of allowed tags",
                 statusCode: StatusCodes.Status400BadRequest);
+        }
 
         Tag tag = createTagDto.ToEntity(userId);
 
         if (await dbContext.Tags.AnyAsync(t => t.UserId == userId && t.Name == tag.Name))
+        {
             return Problem(
-                $"The tag '{tag.Name}' already exists",
+                detail: $"The tag '{tag.Name}' already exists",
                 statusCode: StatusCodes.Status409Conflict);
+        }
 
         dbContext.Tags.Add(tag);
 
@@ -116,20 +165,38 @@ public sealed class TagsController(
 
         TagDto tagDto = tag.ToDto();
 
-        if (acceptHeader.IncludeLinks) tagDto.Links = CreateLinksForTag(tag.Id);
+        if (acceptHeader.IncludeLinks)
+        {
+            tagDto.Links = CreateLinksForTag(tag.Id);
+        }
 
         return CreatedAtAction(nameof(GetTag), new { id = tagDto.Id }, tagDto);
     }
 
+    /// <summary>
+    /// Updates an existing tag
+    /// </summary>
+    /// <param name="id">The tag ID</param>
+    /// <param name="updateTagDto">The tag update details</param>
+    /// <param name="eTagStore">Store for ETag handling</param>
+    /// <returns>No content on success</returns>
     [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UpdateTag(string id, UpdateTagDto updateTagDto, InMemoryETagStore eTagStore)
     {
         string? userId = await userContext.GetUserIdAsync();
-        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
 
         Tag? tag = await dbContext.Tags.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
 
-        if (tag is null) return NotFound();
+        if (tag is null)
+        {
+            return NotFound();
+        }
 
         tag.UpdateFromDto(updateTagDto);
 
@@ -139,15 +206,28 @@ public sealed class TagsController(
         return NoContent();
     }
 
+    /// <summary>
+    /// Deletes a tag
+    /// </summary>
+    /// <param name="id">The tag ID</param>
+    /// <returns>No content on success</returns>
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteTag(string id)
     {
         string? userId = await userContext.GetUserIdAsync();
-        if (string.IsNullOrWhiteSpace(userId)) return Unauthorized();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
 
         Tag? tag = await dbContext.Tags.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
 
-        if (tag is null) return NotFound();
+        if (tag is null)
+        {
+            return NotFound();
+        }
 
         dbContext.Tags.Remove(tag);
 
@@ -163,7 +243,10 @@ public sealed class TagsController(
             linkService.Create(nameof(GetTags), "self", HttpMethods.Get)
         ];
 
-        if (tagsCount < maxAllowedTags) links.Add(linkService.Create(nameof(CreateTag), "create", HttpMethods.Post));
+        if (tagsCount < maxAllowedTags)
+        {
+            links.Add(linkService.Create(nameof(CreateTag), "create", HttpMethods.Post));
+        }
 
         return links;
     }
