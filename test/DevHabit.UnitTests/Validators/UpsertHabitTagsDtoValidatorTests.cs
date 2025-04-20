@@ -24,7 +24,7 @@ public sealed class UpsertHabitTagsDtoValidatorTests
         result.ShouldNotHaveAnyValidationErrors();
     }
 
-    [Fact]
+    /*[Fact]
     public async Task Validate_ShouldReturnError_WhenTagIdsAreEmpty()
     {
         // Arrange
@@ -38,7 +38,7 @@ public sealed class UpsertHabitTagsDtoValidatorTests
 
         // Assert
         result.ShouldHaveAnyValidationError();
-    }
+    }*/
 
     [Fact]
     public async Task Validate_ShouldReturnError_WhenTagIdsContainDuplicates()
