@@ -5,6 +5,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Asp.Versioning.Mvc"/>
+        <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
         <PackageReference Include="CsvHelper"/>
         <PackageReference Include="EFCore.NamingConventions"/>
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions"/>
@@ -28,6 +29,7 @@
         <PackageReference Include="Quartz.Extensions.Hosting"/>
         <PackageReference Include="Refit.HttpClientFactory"/>
         <PackageReference Include="Refit.Newtonsoft.Json"/>
+        <PackageReference Include="Scalar.AspNetCore" />
         <PackageReference Include="Swashbuckle.AspNetCore"/>
         <PackageReference Include="System.Linq.Dynamic.Core"/>
     </ItemGroup>

@@ -1,5 +1,4 @@
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text;
 using System.Threading.RateLimiting;
 using Asp.Versioning;
@@ -70,16 +69,13 @@ public static class DependencyInjection
                     new MediaTypeApiVersionReaderBuilder().Template("application/vnd.dev-habit.hateoas.{version}+json").Build()
                 );
             })
-            .AddMvc();
+            .AddMvc()
+            .AddApiExplorer();
 
         //builder.Services.AddOpenApi();
-        builder.Services.AddSwaggerGen(options =>
-        {
-            options.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
-            string xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            options.IncludeXmlComments(xmlPath);
-        });
+        builder.Services.AddSwaggerGen();
+        builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
+        builder.Services.ConfigureOptions<ConfigureSwaggerUIOptions>();
         builder.Services.AddResponseCaching();
 
         return builder;
@@ -164,7 +160,7 @@ public static class DependencyInjection
         builder.Services
             .AddRefitClient<IGithubApi>(new RefitSettings { ContentSerializer = new NewtonsoftJsonContentSerializer() })
             .ConfigureHttpClient(client => client.BaseAddress = new Uri(builder.Configuration.GetSection("Github:BaseUrl").Get<string>()!));
-            //.AddHttpMessageHandler<DelayHandler>();
+        //.AddHttpMessageHandler<DelayHandler>();
         //.InternalRemoveAllResilienceHandlers()
         // .AddResilienceHandler("custom", pipelineBuilder =>
         // {
