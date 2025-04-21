@@ -6,6 +6,7 @@
     <ItemGroup>
         <PackageReference Include="Asp.Versioning.Mvc"/>
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
+        <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" />
         <PackageReference Include="CsvHelper"/>
         <PackageReference Include="EFCore.NamingConventions"/>
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions"/>
