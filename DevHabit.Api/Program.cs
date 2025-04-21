@@ -18,6 +18,13 @@ builder
 
 WebApplication app = builder.Build();
 
+app.UseSwagger();
+app.UseSwaggerUI();
+app.MapScalarApiReference(options =>
+{
+    options.WithOpenApiRoutePattern("/swagger/1.0/swagger.json");
+});
+
 if (app.Environment.IsDevelopment())
 {
     /*app.MapOpenApi();
@@ -25,12 +32,6 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/openapi/v1.json", "DevHabit API V1");
     });*/
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    app.MapScalarApiReference(options =>
-    {
-        options.WithOpenApiRoutePattern("/swagger/1.0/swagger.json");
-    });
     await app.ApplyMigrationsAsync();
     await app.SeedInitialDataAsync();
 }
