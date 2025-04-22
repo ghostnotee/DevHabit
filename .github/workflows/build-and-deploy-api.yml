@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - "./**"
+      - "./DevHabit.Api/**"
 
 env:
   AZURE_WEBAPP_NAME: devhabit-api
