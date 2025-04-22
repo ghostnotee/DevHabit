@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "./**"
+  workflow_dispatch:
 
 env:
   AZURE_WEBAPP_NAME: devhabit-api
