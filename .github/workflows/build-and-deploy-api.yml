@@ -10,7 +10,7 @@ on:
 
 env:
   AZURE_WEBAPP_NAME: devhabit-api
-  AZURE_WEBAPP_PACKAGE_PATH: "./DevHabit/DevHabit.Api/publish"
+  AZURE_WEBAPP_PACKAGE_PATH: "./DevHabit.Api/publish"
   DOTNET_VERSION: "9.x"
   WORKING_DIRECTORY: "."
   SOLUTION_PATH: "DevHabit.slnx"
@@ -75,8 +75,8 @@ jobs:
 
       - name: Create Migration Bundle
         run:
-          dotnet ef migrations bundle --startup-project ./${{ env.API_PROJECT_PATH }} --project ./${{ env.API_PROJECT_PATH }} --context ApplicationDbContext --output app-bundle.exe
-          dotnet ef migrations bundle --startup-project ./${{ env.API_PROJECT_PATH }} --project ./${{ env.API_PROJECT_PATH }} --context ApplicationIdentityDbContext --output identity-bundle.exe
+          dotnet ef migrations bundle --startup-project ${{ env.API_PROJECT_PATH }} --project ${{ env.API_PROJECT_PATH }} --context ApplicationDbContext --output app-bundle.exe
+          dotnet ef migrations bundle --startup-project ${{ env.API_PROJECT_PATH }} --project ${{ env.API_PROJECT_PATH }} --context ApplicationIdentityDbContext --output identity-bundle.exe
 
       - name: Apply App Migrations
         run: ./app-bundle.exe --connection-string ${{ secrets.DATABASE_CONNECTION_STRING }}
