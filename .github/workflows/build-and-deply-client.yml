@@ -1,10 +1,10 @@
 name: Client CI
 
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
     push:
-        paths:
-            - 'client/devhabit-ui/**'
+      paths:
+        - 'client/devhabit-ui/**'
 jobs:
   build-and-deploy:
     name: Build
@@ -35,7 +35,7 @@ jobs:
         env:
           VITE_API_BASE_URL: ${{ secrets.API_BASE_URL }}
 
-      - name: Install SWA CLI 
+      - name: Install SWA CLI
         run: npm install -g @azure/static-web-apps-cli
 
       - name: Deploy
