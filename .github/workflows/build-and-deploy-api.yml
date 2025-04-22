@@ -16,7 +16,7 @@ env:
   SOLUTION_PATH: "DevHabit.slnx"
   API_PROJECT_PATH: "DevHabit.Api"
   PUBLISH_DIR: "./publish"
-  CONNECTION_STRING: "<Replace by Bundle>"
+  CONNECTIONSTRINGS__DATABASE: "<Replace by Bundle>"
 
 jobs:
   build-and-test:
