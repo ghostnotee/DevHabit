@@ -1,26 +1,26 @@
 name: API CI
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 env:
   AZURE_WEBAPP_NAME: devhabit-api
   AZURE_WEBAPP_PACKAGE_PATH: "./DevHabit.Api/publish"
   DOTNET_VERSION: "9.x"
-  WORKING_DIRECTORY: "."
-  SOLUTION_PATH: "DevHabit.slnx"
+  WORKING_DIRECTORY: DevHabit
+  SOLUTION_PATH: "DevHabit.sln"
   API_PROJECT_PATH: "DevHabit.Api"
   PUBLISH_DIR: "./publish"
-  CONNECTIONSTRINGS__DATABASE: "<Replace by Bundle>"
+  CONNECTIONSTRINGS__DATABASE: "<Replaced by Bundle>"
 
 jobs:
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
-    
+
     defaults:
       run:
         working-directory: ${{ env.WORKING_DIRECTORY }}
@@ -50,7 +50,7 @@ jobs:
         with:
           name: webapp
           path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-  
+
   apply-migrations:
     name: Apply Database Migrations
     needs: build-and-test
@@ -71,22 +71,22 @@ jobs:
       - name: Install EF Core CLI
         run: dotnet tool install --global dotnet-ef
 
-      - name: Create Migration Bundle
-        run:
-          dotnet ef migrations bundle --project DevHabit.Api --context ApplicationDbContext --output app-bundle.exe
-          dotnet ef migrations bundle --project DevHabit.Api --context ApplicationIdentityDbContext --output identity-bundle.exe
+      - name: Create migration bundle
+        run: |
+          dotnet ef migrations bundle --startup-project ${{ env.API_PROJECT_PATH }} --project ${{ env.API_PROJECT_PATH }} --context ApplicationDbContext --output app-bundle.exe
+          dotnet ef migrations bundle --startup-project ${{ env.API_PROJECT_PATH }} --project ${{ env.API_PROJECT_PATH }} --context ApplicationIdentityDbContext --output identity-bundle.exe
 
-      - name: Apply App Migrations
-        run: ./app-bundle.exe --connection ${{ secrets.DATABASE_CONNECTION_STRING }}
+      - name: Apply app migrations
+        run: ./app-bundle.exe --connection "${{ secrets.DATABASE_CONNECTION_STRING }}"
 
-      - name: Apply Identity Migrations
-        run: ./identity-bundle.exe --connection ${{ secrets.DATABASE_CONNECTION_STRING }}
-  
+      - name: Apply identity migrations
+        run: ./identity-bundle.exe --connection "${{ secrets.DATABASE_CONNECTION_STRING }}"
+
   deploy:
     name: Deploy to Azure
     runs-on: ubuntu-latest
     needs: [ build-and-test, apply-migrations ]
-    
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -99,4 +99,4 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+          package: "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
