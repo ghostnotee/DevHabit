@@ -73,8 +73,8 @@ jobs:
 
       - name: Create Migration Bundle
         run:
-          dotnet ef migrations bundle --project ./${{ env.API_PROJECT_PATH }} --context ApplicationDbContext --output app-bundle.exe
-          dotnet ef migrations bundle --project ./${{ env.API_PROJECT_PATH }} --context ApplicationIdentityDbContext --output identity-bundle.exe
+          dotnet ef migrations bundle --project DevHabit.Api --context ApplicationDbContext --output app-bundle.exe
+          dotnet ef migrations bundle --project DevHabit.Api --context ApplicationIdentityDbContext --output identity-bundle.exe
 
       - name: Apply App Migrations
         run: ./app-bundle.exe --connection ${{ secrets.DATABASE_CONNECTION_STRING }}
