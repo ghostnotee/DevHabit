@@ -11,7 +11,7 @@ env:
   AZURE_WEBAPP_PACKAGE_PATH: "./DevHabit.Api/publish"
   DOTNET_VERSION: "9.x"
   WORKING_DIRECTORY: DevHabit.Api
-  SOLUTION_PATH: "DevHabit.sln"
+  SOLUTION_PATH: "DevHabit.slnx"
   API_PROJECT_PATH: "DevHabit.Api"
   PUBLISH_DIR: "./publish"
   CONNECTIONSTRINGS__DATABASE: "<Replaced by Bundle>"
